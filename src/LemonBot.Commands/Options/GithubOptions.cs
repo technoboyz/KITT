@@ -1,6 +1,6 @@
 ﻿namespace LemonBot.Commands.Options
 {
-    public class GithubOptions
+    public record GithubOptions
     {
         public string BaseUrl { get; set; }
     }

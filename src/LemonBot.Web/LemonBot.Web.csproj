@@ -23,6 +23,7 @@
 
   <ItemGroup>
     <Folder Include="Controllers\KITT\" />
+    <Folder Include="wwwroot\command_assets\" />
   </ItemGroup>
 
 </Project>
