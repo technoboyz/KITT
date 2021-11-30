@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\KITT.Core\KITT.Core.csproj" />
+    <ProjectReference Include="..\KITT.Shared\KITT.Shared.csproj" />
     <ProjectReference Include="..\KITT.Web.App\KITT.Web.App.csproj" />
   </ItemGroup>
 

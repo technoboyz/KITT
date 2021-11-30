@@ -1,0 +1,46 @@
+﻿@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+</head>
+<body>
+    <div>
+        <ul id="sentimentList"></ul>
+    </div>
+
+    <script src="~/lib/signalr/signalr.js"></script>
+    <script>
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("https://localhost:5001/bot")
+            .configureLogging(signalR.LogLevel.Information)
+            .build();
+
+        async function start() {
+            try {
+                await connection.start();
+                console.log("SignalR Connected.");
+            } catch (err) {
+                console.log(err);
+                setTimeout(start, 5000);
+            }
+        };
+
+        connection.onclose(async () => {
+            await start();
+        });
+
+        connection.on("SentimentShown", (userName, sentence, sentiment) => {
+            const container = document.getElementById("sentimentList");
+            var listItem = document.createElement("li");
+            listItem.innerHTML = "<strong>" + userName +  "</strong>: " + sentence + " (" + sentiment + ")";
+
+            container.appendChild(listItem);
+        });
+
+        // Start the connection.
+        start();
+    </script>
+</body>
+</html>

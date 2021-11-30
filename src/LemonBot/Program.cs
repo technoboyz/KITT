@@ -1,4 +1,5 @@
-﻿using LemonBot.Clients.Configurations;
+﻿using LemonBot.Clients;
+using LemonBot.Clients.Configurations;
 using LemonBot.Clients.Extensions;
 using LemonBot.Commands.Extensions;
 using LemonBot.Commands.Options;
@@ -13,6 +14,9 @@ var host = Host.CreateDefaultBuilder()
 
         services.Configure<TwitchBotOptions>(configuration.GetSection("TwitchBot"));
         services.Configure<GithubOptions>(configuration.GetSection("GitHub"));
+        services.Configure<TextAnalyticsOptions>(configuration.GetSection("TextAnalytics"));
+
+        services.AddSingleton<TextAnalyticsService>();
 
         services.AddTwitchClient();
         services.AddBotCommands();

@@ -21,4 +21,9 @@ public class HomeController : Controller
     {
         return View();
     }
+
+    public IActionResult Sentiment()
+    {
+        return View();
+    }
 }

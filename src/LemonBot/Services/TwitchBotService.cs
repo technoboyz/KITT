@@ -1,3 +1,4 @@
+using KITT.Shared.EventArgs;
 using LemonBot.Clients;
 using LemonBot.Commands;
 using LemonBot.Commands.Services;
@@ -12,7 +13,7 @@ namespace LemonBot.Services;
 public class TwitchBotService : BackgroundService
 {
     private readonly ILogger<TwitchBotService> _logger;
-
+    private readonly TextAnalyticsService _analyticsService;
     private readonly TwitchClientProxy _client;
 
     private readonly BotCommandResolver _commandFactory;
@@ -21,11 +22,12 @@ public class TwitchBotService : BackgroundService
 
     private HubConnection _connection;
 
-    public TwitchBotService(TwitchClientProxy client, BotCommandResolver commandFactory, ILogger<TwitchBotService> logger)
+    public TwitchBotService(TwitchClientProxy client, BotCommandResolver commandFactory, ILogger<TwitchBotService> logger, TextAnalyticsService analyticsService)
     {
         _client = client ?? throw new ArgumentNullException(nameof(client));
         _commandFactory = commandFactory ?? throw new ArgumentNullException(nameof(commandFactory));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _analyticsService = analyticsService ?? throw new ArgumentNullException(nameof(analyticsService));
 
         _connection = new HubConnectionBuilder()
             .WithUrl("https://localhost:5001/bot")
@@ -103,11 +105,32 @@ public class TwitchBotService : BackgroundService
         }
     }
 
-    private void OnMessageReceived(object? sender, OnMessageReceivedArgs e)
+    private async void OnMessageReceived(object? sender, OnMessageReceivedArgs e)
     {
         _logger.LogInformation("{UserName} says: {Message}", e.ChatMessage.Username, e.ChatMessage.Message);
 
-        //await ExecuteCommandByMessage(e.ChatMessage);
+        var message = e.ChatMessage.Message;
+
+        var language = _analyticsService.DetectLanguage(message);
+        var sentiment = _analyticsService.Analyze(message, language.Iso6391Name);
+
+        await _connection.InvokeAsync(
+            "ShowSentiment",
+            e.ChatMessage.Username, message, sentiment);
+
+        //Console.WriteLine("<<<<SENTIMENT ANALYSIS>>>>>");
+        //Console.WriteLine($"Document sentiment: {sentiment.Sentiment}\n");
+
+        //foreach (var sentence in sentiment.Sentences)
+        //{
+        //    Console.WriteLine($"\tText: \"{sentence.Text}\"");
+        //    Console.WriteLine($"\tSentence sentiment: {sentence.Sentiment}");
+        //    Console.WriteLine($"\tPositive score: {sentence.ConfidenceScores.Positive:0.00}");
+        //    Console.WriteLine($"\tNegative score: {sentence.ConfidenceScores.Negative:0.00}");
+        //    Console.WriteLine($"\tNeutral score: {sentence.ConfidenceScores.Neutral:0.00}\n");
+        //}
+
+        //Console.WriteLine("<<<<END SENTIMENT ANALYSIS>>>>>");
     }
 
     private async void OnChatCommandReceived(object? sender, OnChatCommandReceivedArgs e)

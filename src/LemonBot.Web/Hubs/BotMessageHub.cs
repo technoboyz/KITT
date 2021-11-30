@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using KITT.Shared;
+using KITT.Shared.EventArgs;
+using Microsoft.AspNetCore.SignalR;
 
 namespace LemonBot.Web.Hubs;
 
@@ -25,5 +27,10 @@ public class BotMessageHub : Hub
     public async Task SendOverlay(string resourceUrl)
     {
         await Clients.All.SendAsync("OverlayReceived", resourceUrl);
+    }
+
+    public async Task ShowSentiment(string userName, string sentence, Sentiment sentiment)
+    {
+        await Clients.All.SendAsync("SentimentShown", userName, sentence, sentiment);
     }
 }
