@@ -62,4 +62,6 @@ public class TwitchClientProxy
     public void Join() => _client.JoinChannel(_options.ChannelName);
 
     public void SendMessage(string message) => _client.SendMessage(_options.ChannelName, message);
+
+    public void Reply(string replyToMessage, string message) => _client.SendReply(_options.ChannelName, replyToMessage, message);
 }

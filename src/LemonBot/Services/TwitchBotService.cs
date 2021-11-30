@@ -110,27 +110,20 @@ public class TwitchBotService : BackgroundService
         _logger.LogInformation("{UserName} says: {Message}", e.ChatMessage.Username, e.ChatMessage.Message);
 
         var message = e.ChatMessage.Message;
+        if (!string.IsNullOrWhiteSpace(message))
+        {
+            var language = _analyticsService.DetectLanguage(message);
+            var sentiment = _analyticsService.Analyze(message, language.Iso6391Name);
 
-        var language = _analyticsService.DetectLanguage(message);
-        var sentiment = _analyticsService.Analyze(message, language.Iso6391Name);
+            await _connection.InvokeAsync(
+                "ShowSentiment",
+                e.ChatMessage.Username, message, sentiment);
 
-        await _connection.InvokeAsync(
-            "ShowSentiment",
-            e.ChatMessage.Username, message, sentiment);
-
-        //Console.WriteLine("<<<<SENTIMENT ANALYSIS>>>>>");
-        //Console.WriteLine($"Document sentiment: {sentiment.Sentiment}\n");
-
-        //foreach (var sentence in sentiment.Sentences)
-        //{
-        //    Console.WriteLine($"\tText: \"{sentence.Text}\"");
-        //    Console.WriteLine($"\tSentence sentiment: {sentence.Sentiment}");
-        //    Console.WriteLine($"\tPositive score: {sentence.ConfidenceScores.Positive:0.00}");
-        //    Console.WriteLine($"\tNegative score: {sentence.ConfidenceScores.Negative:0.00}");
-        //    Console.WriteLine($"\tNeutral score: {sentence.ConfidenceScores.Neutral:0.00}\n");
-        //}
-
-        //Console.WriteLine("<<<<END SENTIMENT ANALYSIS>>>>>");
+            if (sentiment == KITT.Shared.Sentiment.Negative)
+            {
+                _client.Reply(e.ChatMessage.Id, "Hai scritto un messaggio un pochino negativo");
+            }
+        }
     }
 
     private async void OnChatCommandReceived(object? sender, OnChatCommandReceivedArgs e)
